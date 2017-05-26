@@ -1,12 +1,12 @@
 extern crate rand;
 use rand::Rng;
-use rand::distributions::{IndependentSample,Range};
 use std::io::prelude::*;
 use std::net::TcpStream;
 use std::process::exit;
-use std::ops::Add;
-use std::ops::Mul;
-use std::f64;
+
+mod complex;
+use complex::Complex;
+use complex::abs;
 
 fn write_to_stream(line: &String, stream: &mut TcpStream) -> bool {
     let mut written;
@@ -33,38 +33,6 @@ fn write_to_stream(line: &String, stream: &mut TcpStream) -> bool {
 
 fn pixel(point: &Point) -> String {
     return format!("PX {} {} {:02x}{:02x}{:02x}", point.x, point.y, point.red, point.green, point.blue);
-}
-
-#[derive(Copy,Clone)]
-struct Complex {
-    real: f64,
-    imag: f64
-}
-
-impl Add for Complex {
-    type Output = Complex;
-
-    fn add(self, other: Complex) -> Complex {
-        Complex {
-            real: self.real + other.real,
-            imag: self.imag + other.imag,
-        }
-    }
-}
-
-impl Mul for Complex {
-    type Output = Complex;
-
-    fn mul(self, other: Complex) -> Complex {
-        Complex {
-            real: self.real * other.real - self.imag * other.imag,
-            imag: self.real * other.imag + self.imag * other.real,
-        }
-    }
-}
-
-fn abs(number: Complex) -> f64 {
-    return f64::sqrt(number.real * number.real + number.imag * number.imag);
 }
 
 fn mandelbrot(c: Complex, iterations: u8) -> f64 {
@@ -124,8 +92,6 @@ fn main() {
         }
     }
 
-    let x_range = Range::new(0, WIDTH);
-    let y_range = Range::new(0, HEIGHT);
     let mut rng = rand::thread_rng();
 
     const NULL_POINT : Point = Point {x: 0, y: 0, red: 0, green: 0, blue: 0};
