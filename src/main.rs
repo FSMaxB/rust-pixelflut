@@ -40,9 +40,11 @@ fn main() {
     let mut tcp_stream = tcp_option.unwrap();
 
     loop {
-        for x in 0..1920 {
-            for y in 0..1080 {
-                write_to_stream(&pixel(x, y, 0, 255, 255), &mut tcp_stream);
+        for red in 0..255 {
+            for green in 0..255 {
+                for blue in 0..255 {
+                    write_to_stream(&pixel(green as u16 + 100, blue as u16 + 100, red, green, blue), &mut tcp_stream);
+                }
             }
         }
     }
