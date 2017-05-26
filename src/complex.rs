@@ -1,6 +1,9 @@
 use std::f64;
 use std::ops::Add;
+use std::ops::Neg;
+use std::ops::Sub;
 use std::ops::Mul;
+use std::ops::Div;
 
 #[derive(Copy,Clone)]
 pub struct Complex {
@@ -14,7 +17,7 @@ impl Add for Complex {
     fn add(self, other: Complex) -> Complex {
         Complex {
             real: self.real + other.real,
-            imag: self.imag + other.imag,
+            imag: self.imag + other.imag
         }
     }
 }
@@ -25,7 +28,41 @@ impl Mul for Complex {
     fn mul(self, other: Complex) -> Complex {
         Complex {
             real: self.real * other.real - self.imag * other.imag,
-            imag: self.real * other.imag + self.imag * other.real,
+            imag: self.real * other.imag + self.imag * other.real
+        }
+    }
+}
+
+impl Sub for Complex {
+    type Output = Complex;
+
+    fn sub(self, other: Complex) -> Complex {
+        Complex {
+            real: self.real - other.real,
+            imag: self.imag - other.imag
+        }
+    }
+}
+
+impl Neg for Complex {
+    type Output = Complex;
+
+    fn neg(self) -> Complex {
+        Complex {
+            real: -self.real,
+            imag: -self.imag
+        }
+    }
+}
+
+impl Div for Complex {
+    type Output = Complex;
+
+    fn div(self, other: Complex) -> Complex {
+        Complex {
+            real: ((self.real * other.real) + (self.imag * other.imag)) / ((other.real * other.real) + (other.imag * other.imag)),
+            imag: ((self.imag * other.real) - (self.real * other.imag)) / ((other.real * other.real) + (other.imag * other.imag))
+
         }
     }
 }
