@@ -8,20 +8,17 @@ mod complex;
 use complex::Complex;
 use complex::abs;
 
-fn write_to_stream(line: &String, stream: &mut TcpStream) -> bool {
+mod pixel;
+use pixel::Point;
+use pixel::pixel_command;
+
+fn write_to_stream(line: &[u8], stream: &mut TcpStream) -> bool {
     let mut written;
-    let mut result = stream.write(line.as_bytes());
+    let mut result = stream.write(line);
     if !result.is_ok() {
         return false;
     } else {
         written = result.unwrap();
-    }
-
-    result = stream.write(b"\n");
-    if !result.is_ok() {
-        return false;
-    } else {
-        written += result.unwrap();
     }
 
     if written != (line.len() + 1) {
@@ -29,10 +26,6 @@ fn write_to_stream(line: &String, stream: &mut TcpStream) -> bool {
     }
 
     return true;
-}
-
-fn pixel(point: &Point) -> String {
-    return format!("PX {} {} {:02x}{:02x}{:02x}", point.x, point.y, point.red, point.green, point.blue);
 }
 
 fn mandelbrot(c: Complex, iterations: u8) -> f64 {
@@ -47,20 +40,11 @@ fn mandelbrot(c: Complex, iterations: u8) -> f64 {
     return 1.0;
 }
 
-#[derive(Copy,Clone)]
-struct Point {
-    x: usize,
-    y: usize,
-    red: u8,
-    green: u8,
-    blue: u8
-}
-
 fn write_vector_to_stream(points: &Vec<Point>, stream: &mut TcpStream) -> bool {
     let mut success = true;
 
     for point in points {
-        success |= write_to_stream(&pixel(point), stream);
+        success |= write_to_stream(pixel_command(point).as_bytes(), stream);
     }
 
     return success;
