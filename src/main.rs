@@ -28,7 +28,7 @@ fn write_to_stream(line: &String, stream: &mut TcpStream) -> bool {
     return true;
 }
 
-fn pixel(x: u16, y: u16, red: u8, green: u8, blue: u8) -> String {
+fn pixel(x: usize, y: usize, red: u8, green: u8, blue: u8) -> String {
     return format!("PX {} {} {:02x}{:02x}{:02x}", x, y, red, green, blue);
 }
 
@@ -68,7 +68,7 @@ fn mandelbrot(c: Complex, iterations: u8) -> f64 {
     let mut z = Complex { real: 0.0, imag: 0.0 };
     for i in 0..iterations {
         if abs(z) > 4.0 {
-            return (i as f64 / iterations as f64);
+            return i as f64 / iterations as f64;
         }
         z = z * z + c;
     }
@@ -83,21 +83,28 @@ fn main() {
         exit(1);
     }
     let mut tcp_stream = tcp_option.unwrap();
-    let iterations = 30;
-    let width = 1000;
-    let offset = 0;
-    let height = (2 * width) / 3;
+    const iterations : u8 = 30;
+    const width : usize = 1000;
+    const offset : usize = 0;
+    const height : usize = (2 * width) / 3;
+
+    let mut buffer: [[f64; height]; width] = [[0.0; height]; width];
+
+    for x in 0..width {
+        for y in 0..height {
+            let c = Complex {
+                real: (x as f64 / width as f64) * 3.0 - 2.0,
+                imag: (y as f64 / height as f64) * 2.5 - 1.25
+            };
+
+            buffer[x][y] = mandelbrot(c, iterations);
+        }
+    }
 
     loop {
-        for x in 0..(width + 1) {
-            for y in 0..(height + 1) {
-                let c = Complex {
-                    real: (x as f64 / width as f64) * 3.0 - 2.0,
-                    imag: (y as f64 / height as f64) * 2.5 - 1.25
-                };
-
-                let factor = mandelbrot(c, iterations);
-                let color = (255.0 * factor) as u8;
+        for x in 0..width {
+            for y in 0..height {
+                let color = (255.0 * buffer[x][y]) as u8;
                 write_to_stream(&pixel(x + offset, y + offset, color, color, color), &mut tcp_stream);
             }
         }
