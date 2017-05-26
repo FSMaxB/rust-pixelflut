@@ -1,5 +1,5 @@
 #[derive(Copy,Clone)]
-pub struct Point {
+pub struct Pixel{
     pub x: usize,
     pub y: usize,
     pub red: u8,
@@ -8,7 +8,7 @@ pub struct Point {
     pub active: bool
 }
 
-pub fn pixel_command(point: &Point) -> String {
+pub fn pixel_command(point: &Pixel) -> String {
     if !point.active {
         return "".to_string();
     }

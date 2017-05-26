@@ -9,7 +9,7 @@ mod fractal;
 mod pixel;
 use complex::Complex;
 use fractal::mandelbrot;
-use pixel::Point;
+use pixel::Pixel;
 use pixel::pixel_command;
 
 fn write_to_stream(line: &[u8], stream: &mut TcpStream) -> bool {
@@ -28,11 +28,11 @@ fn write_to_stream(line: &[u8], stream: &mut TcpStream) -> bool {
     return true;
 }
 
-fn write_vector_to_stream(points: &Vec<Point>, stream: &mut TcpStream) -> bool {
+fn write_vector_to_stream(pixels: &Vec<Pixel>, stream: &mut TcpStream) -> bool {
     let mut success = true;
 
-    for point in points {
-        success |= write_to_stream(pixel_command(point).as_bytes(), stream);
+    for pixel in pixels {
+        success |= write_to_stream(pixel_command(pixel).as_bytes(), stream);
     }
 
     return success;
@@ -66,8 +66,8 @@ fn main() {
 
     let mut rng = rand::thread_rng();
 
-    const NULL_POINT : Point = Point {x: 0, y: 0, red: 0, green: 0, blue: 0, active: false};
-    let mut serialised_buffer : Vec<Point> = vec![NULL_POINT; HEIGHT * WIDTH];
+    const NULL_PIXEL : Pixel = Pixel {x: 0, y: 0, red: 0, green: 0, blue: 0, active: false};
+    let mut serialised_buffer : Vec<Pixel> = vec![NULL_PIXEL; HEIGHT * WIDTH];
 
     for x in 0..WIDTH {
         for y in 0..HEIGHT {
@@ -78,9 +78,9 @@ fn main() {
             } else {
                 active = true;
             }
-            let point = Point {x: x + X_OFFSET, y: y + Y_OFFSET, red: color, green: color, blue: color, active: active};
+            let pixel = Pixel {x: x + X_OFFSET, y: y + Y_OFFSET, red: color, green: color, blue: color, active: active};
             let index = y * WIDTH + x;
-            serialised_buffer[index] = point;
+            serialised_buffer[index] = pixel;
         }
     }
 
@@ -89,8 +89,8 @@ fn main() {
     let mut command_buffer = pixel_command(&serialised_buffer[1]);
 
     {
-        for point in &serialised_buffer {
-            command_buffer += &pixel_command(point);
+        for pixel in &serialised_buffer {
+            command_buffer += &pixel_command(pixel);
         }
     }
 
