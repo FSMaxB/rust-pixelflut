@@ -31,8 +31,8 @@ fn write_to_stream(line: &String, stream: &mut TcpStream) -> bool {
     return true;
 }
 
-fn pixel(x: usize, y: usize, red: u8, green: u8, blue: u8) -> String {
-    return format!("PX {} {} {:02x}{:02x}{:02x}", x, y, red, green, blue);
+fn pixel(point: &Point) -> String {
+    return format!("PX {} {} {:02x}{:02x}{:02x}", point.x, point.y, point.red, point.green, point.blue);
 }
 
 #[derive(Copy,Clone)]
@@ -79,39 +79,70 @@ fn mandelbrot(c: Complex, iterations: u8) -> f64 {
     return 1.0;
 }
 
+#[derive(Copy,Clone)]
+struct Point {
+    x: usize,
+    y: usize,
+    red: u8,
+    green: u8,
+    blue: u8
+}
+
+fn write_vector_to_stream(points: &Vec<Point>, stream: &mut TcpStream) -> bool {
+    let mut success = true;
+
+    for point in points {
+        success |= write_to_stream(&pixel(point), stream);
+    }
+
+    return success;
+}
+
 fn main() {
-    let tcp_option = TcpStream::connect("94.45.234.7:1234");
+    let tcp_option = TcpStream::connect("94.45.231.39:1234");
     if !tcp_option.is_ok() {
         println!("Failed to open TCP stream.");
         exit(1);
     }
     let mut tcp_stream = tcp_option.unwrap();
-    const iterations : u8 = 30;
-    const width : usize = 1000;
-    const offset : usize = 0;
-    const height : usize = (2 * width) / 3;
+    const ITERATIONS : u8 = 30;
+    const WIDTH : usize = 1000;
+    const Y_OFFSET : usize = 100;
+    const X_OFFSET : usize = 100;
+    const HEIGHT : usize = (2 * WIDTH) / 3;
 
-    let mut buffer: [[f64; height]; width] = [[0.0; height]; width];
+    let mut buffer : Vec<Vec<f64>> = vec![vec![0.0; HEIGHT]; WIDTH];
 
-    for x in 0..width {
-        for y in 0..height {
+    for x in 0..WIDTH {
+        for y in 0..HEIGHT {
             let c = Complex {
-                real: (x as f64 / width as f64) * 3.0 - 2.0,
-                imag: (y as f64 / height as f64) * 2.5 - 1.25
+                real: (x as f64 / WIDTH as f64) * 3.0 - 2.0,
+                imag: (y as f64 / HEIGHT as f64) * 2.5 - 1.25
             };
 
-            buffer[x][y] = mandelbrot(c, iterations);
+            buffer[x][y] = mandelbrot(c, ITERATIONS);
         }
     }
 
-    let x_range = Range::new(0, width);
-    let y_range = Range::new(0, height);
+    let x_range = Range::new(0, WIDTH);
+    let y_range = Range::new(0, HEIGHT);
     let mut rng = rand::thread_rng();
 
+    const NULL_POINT : Point = Point {x: 0, y: 0, red: 0, green: 0, blue: 0};
+    let mut serialised_buffer : Vec<Point> = vec![NULL_POINT; HEIGHT * WIDTH];
+
+    for x in 0..WIDTH {
+        for y in 0..HEIGHT {
+            let color = (255.0 * buffer[x][y]) as u8;
+            let point = Point {x: x + X_OFFSET, y: y + Y_OFFSET, red: color, green: color, blue: color};
+            let index = y * WIDTH + x;
+            serialised_buffer[index] = point;
+        }
+    }
+
+    rng.shuffle(&mut serialised_buffer[..]);
+
     loop {
-        let x = x_range.ind_sample(&mut rng);
-        let y = y_range.ind_sample(&mut rng);
-        let color = (255.0 * buffer[x][y]) as u8;
-        write_to_stream(&pixel(x + offset, y + offset, color, color, color), &mut tcp_stream);
+        write_vector_to_stream(&serialised_buffer, &mut tcp_stream);
     }
 }
