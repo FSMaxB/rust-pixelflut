@@ -13,8 +13,8 @@ use pixel::Point;
 use pixel::pixel_command;
 
 fn write_to_stream(line: &[u8], stream: &mut TcpStream) -> bool {
-    let mut written;
-    let mut result = stream.write(line);
+    let written;
+    let result = stream.write(line);
     if !result.is_ok() {
         return false;
     } else {
@@ -58,9 +58,9 @@ fn main() {
     }
     let mut tcp_stream = tcp_option.unwrap();
     const ITERATIONS : u8 = 30;
-    const WIDTH : usize = 400;
-    const X_OFFSET : usize = 0;
-    const Y_OFFSET : usize = 620;
+    const WIDTH : usize = 600;
+    const X_OFFSET : usize = 1020;
+    const Y_OFFSET : usize = 0;
     const HEIGHT : usize = (2 * WIDTH) / 3;
 
     let mut buffer : Vec<Vec<f64>> = vec![vec![0.0; HEIGHT]; WIDTH];
