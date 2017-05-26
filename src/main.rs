@@ -58,9 +58,9 @@ fn main() {
     }
     let mut tcp_stream = tcp_option.unwrap();
     const ITERATIONS : u8 = 30;
-    const WIDTH : usize = 1000;
-    const Y_OFFSET : usize = 100;
-    const X_OFFSET : usize = 100;
+    const WIDTH : usize = 500;
+    const X_OFFSET : usize = 0;
+    const Y_OFFSET : usize = 820;
     const HEIGHT : usize = (2 * WIDTH) / 3;
 
     let mut buffer : Vec<Vec<f64>> = vec![vec![0.0; HEIGHT]; WIDTH];
@@ -92,7 +92,17 @@ fn main() {
 
     rng.shuffle(&mut serialised_buffer[..]);
 
+    let mut command_buffer = pixel_command(&serialised_buffer[1]);
+
+    {
+        for point in &serialised_buffer {
+            command_buffer += &pixel_command(point);
+        }
+    }
+
+    let commands = command_buffer.as_bytes();
+
     loop {
-        write_vector_to_stream(&serialised_buffer, &mut tcp_stream);
+        write_to_stream(&commands, &mut tcp_stream);
     }
 }
