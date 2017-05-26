@@ -58,9 +58,9 @@ fn main() {
     }
     let mut tcp_stream = tcp_option.unwrap();
     const ITERATIONS : u8 = 30;
-    const WIDTH : usize = 500;
+    const WIDTH : usize = 400;
     const X_OFFSET : usize = 0;
-    const Y_OFFSET : usize = 820;
+    const Y_OFFSET : usize = 620;
     const HEIGHT : usize = (2 * WIDTH) / 3;
 
     let mut buffer : Vec<Vec<f64>> = vec![vec![0.0; HEIGHT]; WIDTH];
@@ -78,13 +78,19 @@ fn main() {
 
     let mut rng = rand::thread_rng();
 
-    const NULL_POINT : Point = Point {x: 0, y: 0, red: 0, green: 0, blue: 0};
+    const NULL_POINT : Point = Point {x: 0, y: 0, red: 0, green: 0, blue: 0, active: false};
     let mut serialised_buffer : Vec<Point> = vec![NULL_POINT; HEIGHT * WIDTH];
 
     for x in 0..WIDTH {
         for y in 0..HEIGHT {
             let color = (255.0 * buffer[x][y]) as u8;
-            let point = Point {x: x + X_OFFSET, y: y + Y_OFFSET, red: color, green: color, blue: color};
+            let active;
+            if color < 40 {
+                active = false;
+            } else {
+                active = true;
+            }
+            let point = Point {x: x + X_OFFSET, y: y + Y_OFFSET, red: color, green: color, blue: color, active: active};
             let index = y * WIDTH + x;
             serialised_buffer[index] = point;
         }
