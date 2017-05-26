@@ -5,10 +5,10 @@ use std::net::TcpStream;
 use std::process::exit;
 
 mod complex;
-use complex::Complex;
-use complex::abs;
-
+mod fractal;
 mod pixel;
+use complex::Complex;
+use fractal::mandelbrot;
 use pixel::Point;
 use pixel::pixel_command;
 
@@ -26,18 +26,6 @@ fn write_to_stream(line: &[u8], stream: &mut TcpStream) -> bool {
     }
 
     return true;
-}
-
-fn mandelbrot(c: Complex, iterations: u8) -> f64 {
-    let mut z = Complex { real: 0.0, imag: 0.0 };
-    for i in 0..iterations {
-        if abs(z) > 4.0 {
-            return i as f64 / iterations as f64;
-        }
-        z = z * z + c;
-    }
-
-    return 1.0;
 }
 
 fn write_vector_to_stream(points: &Vec<Point>, stream: &mut TcpStream) -> bool {
