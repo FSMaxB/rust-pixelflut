@@ -1,3 +1,6 @@
+extern crate rand;
+use rand::Rng;
+use rand::distributions::{IndependentSample,Range};
 use std::io::prelude::*;
 use std::net::TcpStream;
 use std::process::exit;
@@ -101,12 +104,14 @@ fn main() {
         }
     }
 
+    let x_range = Range::new(0, width);
+    let y_range = Range::new(0, height);
+    let mut rng = rand::thread_rng();
+
     loop {
-        for x in 0..width {
-            for y in 0..height {
-                let color = (255.0 * buffer[x][y]) as u8;
-                write_to_stream(&pixel(x + offset, y + offset, color, color, color), &mut tcp_stream);
-            }
-        }
+        let x = x_range.ind_sample(&mut rng);
+        let y = y_range.ind_sample(&mut rng);
+        let color = (255.0 * buffer[x][y]) as u8;
+        write_to_stream(&pixel(x + offset, y + offset, color, color, color), &mut tcp_stream);
     }
 }
