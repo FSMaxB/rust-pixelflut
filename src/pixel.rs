@@ -2,6 +2,7 @@ use coordinate::Coordinate;
 use std::ops::Index;
 use std::ops::IndexMut;
 use std::option::Option;
+use std::string::ToString;
 
 #[derive(Copy,Clone)]
 pub struct Color {
@@ -25,6 +26,15 @@ impl Color {
     }
 }
 
+impl ToString for Color {
+    fn to_string(&self) -> String {
+        match self.alpha {
+            Some(u8) => format!("{:02x}{:02x}{:02x}{:02x}", self.red, self.green, self.blue, self.alpha.unwrap()),
+            None => format!("{:02x}{:02x}{:02x}", self.red, self.green, self.blue),
+        }
+    }
+}
+
 #[derive(Copy,Clone)]
 pub struct Pixel{
     pub coordinate : Coordinate,
@@ -42,7 +52,7 @@ pub fn pixel_command(point: &Pixel) -> String {
     if !point.active {
         return "".to_string();
     }
-    let command = format!("PX {} {} {:02x}{:02x}{:02x}\n", point.coordinate.x, point.coordinate.y, point.color.red, point.color.green, point.color.blue);
+    let command = format!("PX {} {} {}\n", point.coordinate.x, point.coordinate.y, point.color.to_string());
 
     return command;
 }
