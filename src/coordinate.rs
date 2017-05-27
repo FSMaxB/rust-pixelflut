@@ -1,7 +1,15 @@
+use std::string::ToString;
+
 #[derive(Copy,Clone)]
 pub struct Coordinate {
     pub x: usize,
     pub y: usize
+}
+
+impl ToString for Coordinate {
+    fn to_string(&self) -> String {
+        format!("{} {}", self.x, self.y)
+    }
 }
 
 #[derive(Copy,Clone)]

@@ -11,7 +11,6 @@ mod coordinate;
 use complex::Complex;
 use fractal::mandelbrot;
 use pixel::Pixel;
-use pixel::pixel_command;
 use pixel::Color;
 use coordinate::Coordinate;
 use coordinate::Dimension;
@@ -36,7 +35,7 @@ fn write_vector_to_stream(pixels: &Vec<Pixel>, stream: &mut TcpStream) -> bool {
     let mut success = true;
 
     for pixel in pixels {
-        success |= write_to_stream(pixel_command(pixel).as_bytes(), stream);
+        success |= write_to_stream(pixel.to_string().as_bytes(), stream);
     }
 
     return success;
@@ -88,11 +87,11 @@ fn main() {
 
     rng.shuffle(&mut serialised_buffer[..]);
 
-    let mut command_buffer = pixel_command(&serialised_buffer[1]);
+    let mut command_buffer = (&serialised_buffer[1]).to_string();
 
     {
         for pixel in &serialised_buffer {
-            command_buffer += &pixel_command(pixel);
+            command_buffer += &(pixel.to_string());
         }
     }
 

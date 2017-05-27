@@ -48,11 +48,11 @@ impl Pixel {
     }
 }
 
-pub fn pixel_command(point: &Pixel) -> String {
-    if !point.active {
-        return "".to_string();
+impl ToString for Pixel {
+    fn to_string(&self) -> String {
+        match self.active {
+            true => format!("PX {} {}\n", self.coordinate.to_string(), self.color.to_string()),
+            false => "".to_string()
+        }
     }
-    let command = format!("PX {} {} {}\n", point.coordinate.x, point.coordinate.y, point.color.to_string());
-
-    return command;
 }
