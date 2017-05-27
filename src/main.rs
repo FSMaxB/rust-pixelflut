@@ -7,10 +7,13 @@ use std::process::exit;
 mod complex;
 mod fractal;
 mod pixel;
+mod coordinate;
 use complex::Complex;
 use fractal::mandelbrot;
 use pixel::Pixel;
 use pixel::pixel_command;
+use coordinate::Coordinate;
+use coordinate::Dimension;
 
 fn write_to_stream(line: &[u8], stream: &mut TcpStream) -> bool {
     let written;
@@ -47,17 +50,16 @@ fn main() {
     let mut tcp_stream = tcp_option.unwrap();
     const ITERATIONS : u8 = 30;
     const WIDTH : usize = 600;
-    const X_OFFSET : usize = 1020;
-    const Y_OFFSET : usize = 0;
-    const HEIGHT : usize = (2 * WIDTH) / 3;
+    const DIMENSION : Dimension = Dimension {width: WIDTH, height: (2 * WIDTH) / 3};
+    const OFFSET : Coordinate = Coordinate {x: 1020, y: 0};
 
-    let mut buffer : Vec<Vec<f64>> = vec![vec![0.0; HEIGHT]; WIDTH];
+    let mut buffer : Vec<Vec<f64>> = vec![vec![0.0; DIMENSION.height]; DIMENSION.width];
 
-    for x in 0..WIDTH {
-        for y in 0..HEIGHT {
+    for x in 0..DIMENSION.width {
+        for y in 0..DIMENSION.height {
             let c = Complex {
-                real: (x as f64 / WIDTH as f64) * 3.0 - 2.0,
-                imag: (y as f64 / HEIGHT as f64) * 2.5 - 1.25
+                real: (x as f64 / DIMENSION.width as f64) * 3.0 - 2.0,
+                imag: (y as f64 / DIMENSION.height as f64) * 2.5 - 1.25
             };
 
             buffer[x][y] = mandelbrot(c, ITERATIONS);
@@ -66,11 +68,11 @@ fn main() {
 
     let mut rng = rand::thread_rng();
 
-    const NULL_PIXEL : Pixel = Pixel {x: 0, y: 0, red: 0, green: 0, blue: 0, active: false};
-    let mut serialised_buffer : Vec<Pixel> = vec![NULL_PIXEL; HEIGHT * WIDTH];
+    const NULL_PIXEL : Pixel = Pixel {coordinate: Coordinate {x: 0, y: 0}, red: 0, green: 0, blue: 0, active: false};
+    let mut serialised_buffer : Vec<Pixel> = vec![NULL_PIXEL; DIMENSION.pixels()];
 
-    for x in 0..WIDTH {
-        for y in 0..HEIGHT {
+    for x in 0..DIMENSION.width {
+        for y in 0..DIMENSION.height {
             let color = (255.0 * buffer[x][y]) as u8;
             let active;
             if color < 40 {
@@ -78,8 +80,8 @@ fn main() {
             } else {
                 active = true;
             }
-            let pixel = Pixel {x: x + X_OFFSET, y: y + Y_OFFSET, red: color, green: color, blue: color, active: active};
-            let index = y * WIDTH + x;
+            let pixel = Pixel {coordinate: Coordinate {x: x + OFFSET.x, y: y + OFFSET.y}, red: color, green: color, blue: color, active: active};
+            let index = y * DIMENSION.height + x;
             serialised_buffer[index] = pixel;
         }
     }
