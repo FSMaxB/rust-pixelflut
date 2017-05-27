@@ -6,6 +6,7 @@ use std::option::Option;
 use std::string::ToString;
 extern crate rand;
 use rand::Rng;
+use std::iter::Iterator;
 
 #[derive(Copy,Clone)]
 pub struct Color {
@@ -92,6 +93,10 @@ impl Field {
 
         return serialised;
     }
+
+    pub fn coordinates_iterator(&self) -> FieldCoordinatesIterator {
+        FieldCoordinatesIterator::new(self)
+    }
 }
 
 impl Index<usize> for Field {
@@ -104,5 +109,32 @@ impl Index<usize> for Field {
 impl IndexMut<usize> for Field {
     fn index_mut(&mut self, index: usize) -> &mut Vec<Pixel> {
         &mut self.field[index]
+    }
+}
+
+struct FieldCoordinatesIterator {
+    dimension : Dimension,
+    index : usize,
+}
+
+impl FieldCoordinatesIterator {
+    pub fn new(field: &Field) -> FieldCoordinatesIterator {
+        FieldCoordinatesIterator {dimension: field.dimension, index: 0}
+    }
+}
+
+impl Iterator for FieldCoordinatesIterator {
+    type Item = (usize, usize);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.index == self.dimension.pixels() {
+            return None;
+        }
+
+        let x = self.index % self.dimension.width;
+        let y = self.index / self.dimension.width;
+        self.index += 1;
+
+        Some((x, y))
     }
 }

@@ -57,23 +57,21 @@ fn main() {
     let mut buffer : Vec<Vec<f64>> = vec![vec![0.0; DIMENSION.height]; DIMENSION.width];
     let mut field = Field::new(DIMENSION);
 
-    for x in 0..field.dimension().width {
-        for y in 0..field.dimension().height {
-            let c = Complex {
-                real: (x as f64 / DIMENSION.width as f64) * 3.0 - 2.0,
-                imag: (y as f64 / DIMENSION.height as f64) * 2.5 - 1.25
-            };
+    for (x, y) in field.coordinates_iterator() {
+        let c = Complex {
+            real: (x as f64 / DIMENSION.width as f64) * 3.0 - 2.0,
+            imag: (y as f64 / DIMENSION.height as f64) * 2.5 - 1.25
+        };
 
-            let color = (255.0 * mandelbrot(c, ITERATIONS)) as u8;
-            let active;
-            if color < 40 {
-                active = false;
-            } else {
-                active = true;
-            }
-
-            field[x][y] = Pixel {coordinate: Coordinate {x: x + OFFSET.x, y: y + OFFSET.y}, color: Color::gray(color), active: active};
+        let color = (255.0 * mandelbrot(c, ITERATIONS)) as u8;
+        let active;
+        if color < 40 {
+            active = false;
+        } else {
+            active = true;
         }
+
+        field[x][y] = Pixel {coordinate: Coordinate {x: x + OFFSET.x, y: y + OFFSET.y}, color: Color::gray(color), active: active};
     }
 
     let serialised_buffer = field.serialise();
