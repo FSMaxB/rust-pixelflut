@@ -12,6 +12,7 @@ use complex::Complex;
 use fractal::mandelbrot;
 use pixel::Pixel;
 use pixel::pixel_command;
+use pixel::Color;
 use coordinate::Coordinate;
 use coordinate::Dimension;
 
@@ -79,7 +80,7 @@ fn main() {
             } else {
                 active = true;
             }
-            let pixel = Pixel {coordinate: Coordinate {x: x + OFFSET.x, y: y + OFFSET.y}, red: color, green: color, blue: color, active: active};
+            let pixel = Pixel {coordinate: Coordinate {x: x + OFFSET.x, y: y + OFFSET.y}, color: Color {red: color, green: color, blue: color, alpha: None}, active: active};
             let index = y * DIMENSION.height + x;
             serialised_buffer[index] = pixel;
         }
