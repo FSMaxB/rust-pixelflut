@@ -1,5 +1,4 @@
 extern crate rand;
-use rand::Rng;
 use std::io::prelude::*;
 use std::net::TcpStream;
 use std::process::exit;
@@ -16,32 +15,6 @@ use pixel::Field;
 use coordinate::Coordinate;
 use coordinate::Dimension;
 
-fn write_to_stream(line: &[u8], stream: &mut TcpStream) -> bool {
-    let written;
-    let result = stream.write(line);
-    if !result.is_ok() {
-        return false;
-    } else {
-        written = result.unwrap();
-    }
-
-    if written != (line.len() + 1) {
-        return false;
-    }
-
-    return true;
-}
-
-fn write_vector_to_stream(pixels: &Vec<Pixel>, stream: &mut TcpStream) -> bool {
-    let mut success = true;
-
-    for pixel in pixels {
-        success |= write_to_stream(pixel.to_string().as_bytes(), stream);
-    }
-
-    return success;
-}
-
 fn main() {
     let tcp_option = TcpStream::connect("94.45.231.39:1234");
     if !tcp_option.is_ok() {
@@ -54,7 +27,6 @@ fn main() {
     const DIMENSION : Dimension = Dimension {width: WIDTH, height: (2 * WIDTH) / 3};
     const OFFSET : Coordinate = Coordinate {x: 1020, y: 0};
 
-    let mut buffer : Vec<Vec<f64>> = vec![vec![0.0; DIMENSION.height]; DIMENSION.width];
     let mut field = Field::new(DIMENSION);
 
     for (x, y) in field.coordinates_iterator() {
@@ -86,6 +58,6 @@ fn main() {
     let commands = command_buffer.as_bytes();
 
     loop {
-        write_to_stream(&commands, &mut tcp_stream);
+        let _ = tcp_stream.write(&commands);
     }
 }

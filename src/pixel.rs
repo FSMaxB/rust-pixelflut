@@ -24,10 +24,6 @@ impl Color {
     pub fn gray(color: u8) -> Color {
         Color {red: color, green: color, blue: color, alpha: None}
     }
-
-    pub fn new(red: u8, green: u8, blue: u8) -> Color {
-        Color {red: red, green: green, blue: blue, alpha: None}
-    }
 }
 
 impl ToString for Color {
@@ -74,10 +70,6 @@ impl Field {
         }
     }
 
-    pub fn dimension(&self) -> &Dimension {
-        &self.dimension
-    }
-
     pub fn serialise(&self) -> Vec<Pixel> {
         let pixels = self.dimension.pixels();
         let mut serialised = vec![Pixel::null(); pixels];
@@ -112,7 +104,7 @@ impl IndexMut<usize> for Field {
     }
 }
 
-struct FieldCoordinatesIterator {
+pub struct FieldCoordinatesIterator {
     dimension : Dimension,
     index : usize,
 }

@@ -19,10 +19,6 @@ pub struct Dimension {
 }
 
 impl Dimension {
-    pub fn null() -> Dimension {
-        Dimension {width: 0, height: 0}
-    }
-
     pub fn pixels(self) -> usize {
         self.width * self.height
     }
