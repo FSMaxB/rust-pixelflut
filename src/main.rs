@@ -12,6 +12,7 @@ use complex::Complex;
 use fractal::mandelbrot;
 use pixel::Pixel;
 use pixel::Color;
+use pixel::Field;
 use coordinate::Coordinate;
 use coordinate::Dimension;
 
@@ -54,41 +55,30 @@ fn main() {
     const OFFSET : Coordinate = Coordinate {x: 1020, y: 0};
 
     let mut buffer : Vec<Vec<f64>> = vec![vec![0.0; DIMENSION.height]; DIMENSION.width];
+    let mut field = Field::new(DIMENSION);
 
-    for x in 0..DIMENSION.width {
-        for y in 0..DIMENSION.height {
+    for x in 0..field.dimension().width {
+        for y in 0..field.dimension().height {
             let c = Complex {
                 real: (x as f64 / DIMENSION.width as f64) * 3.0 - 2.0,
                 imag: (y as f64 / DIMENSION.height as f64) * 2.5 - 1.25
             };
 
-            buffer[x][y] = mandelbrot(c, ITERATIONS);
-        }
-    }
-
-    let mut rng = rand::thread_rng();
-
-    let mut serialised_buffer : Vec<Pixel> = vec![Pixel::null(); DIMENSION.pixels()];
-
-    for x in 0..DIMENSION.width {
-        for y in 0..DIMENSION.height {
-            let color = (255.0 * buffer[x][y]) as u8;
+            let color = (255.0 * mandelbrot(c, ITERATIONS)) as u8;
             let active;
             if color < 40 {
                 active = false;
             } else {
                 active = true;
             }
-            let pixel = Pixel {coordinate: Coordinate {x: x + OFFSET.x, y: y + OFFSET.y}, color: Color::gray(color), active: active};
-            let index = y * DIMENSION.height + x;
-            serialised_buffer[index] = pixel;
+
+            field[x][y] = Pixel {coordinate: Coordinate {x: x + OFFSET.x, y: y + OFFSET.y}, color: Color::gray(color), active: active};
         }
     }
 
-    rng.shuffle(&mut serialised_buffer[..]);
+    let serialised_buffer = field.serialise();
 
     let mut command_buffer = (&serialised_buffer[1]).to_string();
-
     {
         for pixel in &serialised_buffer {
             command_buffer += &(pixel.to_string());
