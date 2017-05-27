@@ -15,6 +15,14 @@ impl Color {
     pub fn null() -> Color {
         Color {red: 0, green: 0, blue: 0, alpha: None}
     }
+
+    pub fn gray(color: u8) -> Color {
+        Color {red: color, green: color, blue: color, alpha: None}
+    }
+
+    pub fn new(red: u8, green: u8, blue: u8) -> Color {
+        Color {red: red, green: green, blue: blue, alpha: None}
+    }
 }
 
 #[derive(Copy,Clone)]
