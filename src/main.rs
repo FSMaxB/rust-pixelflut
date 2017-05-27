@@ -68,8 +68,7 @@ fn main() {
 
     let mut rng = rand::thread_rng();
 
-    const NULL_PIXEL : Pixel = Pixel {coordinate: Coordinate {x: 0, y: 0}, red: 0, green: 0, blue: 0, active: false};
-    let mut serialised_buffer : Vec<Pixel> = vec![NULL_PIXEL; DIMENSION.pixels()];
+    let mut serialised_buffer : Vec<Pixel> = vec![Pixel::null(); DIMENSION.pixels()];
 
     for x in 0..DIMENSION.width {
         for y in 0..DIMENSION.height {

@@ -11,7 +11,17 @@ pub struct Dimension {
 }
 
 impl Dimension {
+    pub fn null() -> Dimension {
+        Dimension {width: 0, height: 0}
+    }
+
     pub fn pixels(self) -> usize {
-        return self.width * self.height;
+        self.width * self.height
+    }
+}
+
+impl Coordinate {
+    pub fn null() -> Coordinate {
+        Coordinate {x: 0, y: 0}
     }
 }
