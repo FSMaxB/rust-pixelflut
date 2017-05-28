@@ -2,6 +2,7 @@ extern crate rand;
 use std::io::prelude::*;
 use std::net::TcpStream;
 use std::process::exit;
+use std::thread;
 
 mod complex;
 mod fractal;
@@ -48,16 +49,57 @@ fn main() {
 
     let serialised_buffer = field.serialise();
 
-    let mut command_buffer = (&serialised_buffer[1]).to_string();
+    const CONNECTIONS : usize = 100;
+
+    let mut connections = vec![];
+
+    for i in 0..CONNECTIONS {
+        let tcp_result = TcpStream::connect("94.45.231.39:1234");
+        if !tcp_result.is_ok() {
+            println!("Failed to open TCP stream {}.", i);
+        } else {
+            println!("Opened TCP stream {}.", i);
+        }
+
+        connections.push(tcp_result.unwrap());
+    }
+
+    let divisor = serialised_buffer.len() / CONNECTIONS;
+    let mut connection_slices = vec![];
+    for i in 0..CONNECTIONS {
+        connection_slices.push(&serialised_buffer[(i*divisor)..((i+1)*divisor)]);
+    }
+
+    let mut connection_commands = vec![];
+    for slice in connection_slices {
+        let mut command = "".to_string();
+        for pixel in slice {
+            command += &(pixel.to_string());
+        }
+        connection_commands.push(command);
+    }
+
+    /*let mut command_buffer = (&serialised_buffer[1]).to_string();
     {
         for pixel in &serialised_buffer {
             command_buffer += &(pixel.to_string());
         }
+    }*/
+
+    let mut threads = vec![];
+
+    for i in 0..CONNECTIONS {
+        let mut connection = connections.pop().unwrap();
+        let command = connection_commands.pop().unwrap();
+
+        threads.push(thread::spawn(move || {
+            loop {
+                connection.write(&(command.as_bytes()));
+            }
+        }));
     }
 
-    let commands = command_buffer.as_bytes();
-
-    loop {
-        let _ = tcp_stream.write(&commands);
+    for thread in threads {
+        thread.join();
     }
 }
