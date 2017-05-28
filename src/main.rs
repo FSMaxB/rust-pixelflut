@@ -9,6 +9,7 @@ mod pixel;
 mod coordinate;
 use complex::Complex;
 use fractal::mandelbrot;
+use fractal::julia;
 use pixel::Pixel;
 use pixel::Color;
 use pixel::Field;
@@ -17,16 +18,20 @@ use coordinate::Dimension;
 
 fn main() {
     const ITERATIONS : u8 = 30;
-    const WIDTH : usize = 900;
+    const WIDTH : usize = 500;
     const DIMENSION : Dimension = Dimension {width: WIDTH, height: (2 * WIDTH) / 3};
-    const OFFSET : Coordinate = Coordinate {x: 1120, y: 0};
+    const OFFSET : Coordinate = Coordinate {x: 1420, y: 0};
 
     let mut field = Field::new(DIMENSION);
 
     for (x, y) in field.coordinates_iterator() {
+        let fractal_width = 3.0;
+        let fractal_height = (DIMENSION.height as f64 / DIMENSION.width as f64) * fractal_width;
+        let fractal_x_offset = -0.5;
+        let fractal_y_offset = 0.0;
         let c = Complex {
-            real: (x as f64 / DIMENSION.width as f64) * 3.0 - 2.0,
-            imag: (y as f64 / DIMENSION.height as f64) * 2.5 - 1.25
+            real: (x as f64 / DIMENSION.width as f64) * fractal_width - fractal_width/2.0 + fractal_x_offset,
+            imag: (y as f64 / DIMENSION.height as f64) * fractal_height - fractal_height/2.0 + fractal_y_offset,
         };
 
         let color = (255.0 * mandelbrot(c, ITERATIONS)) as u8;
