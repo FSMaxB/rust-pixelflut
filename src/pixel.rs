@@ -7,6 +7,7 @@ use std::string::ToString;
 extern crate rand;
 use rand::Rng;
 use std::iter::Iterator;
+use std::u32;
 
 #[derive(Copy,Clone)]
 pub struct Color {
@@ -23,6 +24,15 @@ impl Color {
 
     pub fn gray(color: u8) -> Color {
         Color {red: color, green: color, blue: color, alpha: None}
+    }
+
+    pub fn gradient24(value: f64) -> Color {
+        let value32 = (value * u32::MAX as f64) as u32;
+        let blue = ((value32 >> 0) as u8);
+        let green = ((value32 >> 8) as u8);
+        let red = ((value32 >> 16) as u8);
+
+        Color {red: red, blue: blue, green: green, alpha: None}
     }
 
     pub fn gray_gradient(value: f64) -> Color {

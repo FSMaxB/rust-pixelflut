@@ -17,10 +17,9 @@ use coordinate::Coordinate;
 use coordinate::Dimension;
 
 fn main() {
-    const ITERATIONS : u8 = 30;
-    const WIDTH : usize = 800;
-    const DIMENSION : Dimension = Dimension {width: WIDTH, height: (2 * WIDTH) / 3};
-    const OFFSET : Coordinate = Coordinate {x: 1120, y: 0};
+    const ITERATIONS : u8 = 1000;
+    const DIMENSION : Dimension = Dimension {width: 1920, height: 1200};
+    const OFFSET : Coordinate = Coordinate {x: 0, y: 0};
 
     let mut field = Field::new(DIMENSION);
 
@@ -37,19 +36,20 @@ fn main() {
         //let iteration_factor = mandelbrot(c, ITERATIONS);
         let iteration_factor = julia(c, ITERATIONS);
         let active;
-        if iteration_factor < 0.1 {
+        if iteration_factor < 0.0 {
             active = false;
         } else {
             active = true;
         }
-        let color = Color::gray_gradient(iteration_factor);
+        let active = true;
+        let color = Color::gradient24(iteration_factor);
 
         field[x][y] = Pixel {coordinate: Coordinate {x: x + OFFSET.x, y: y + OFFSET.y}, color: color, active: active};
     }
 
     let serialised_buffer = field.serialise();
 
-    const CONNECTIONS : usize = 100;
+    const CONNECTIONS : usize = 1;
 
     let mut connections = vec![];
 
