@@ -24,6 +24,11 @@ impl Color {
     pub fn gray(color: u8) -> Color {
         Color {red: color, green: color, blue: color, alpha: None}
     }
+
+    pub fn gray_gradient(value: f64) -> Color {
+        let color = (255.0 * value) as u8;
+        Color {red: color, blue: color, green: color, alpha: None}
+    }
 }
 
 impl ToString for Color {

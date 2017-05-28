@@ -34,16 +34,17 @@ fn main() {
             imag: (y as f64 / DIMENSION.height as f64) * fractal_height - fractal_height/2.0 + fractal_y_offset,
         };
 
-        //let color = (255.0 * mandelbrot(c, ITERATIONS)) as u8;
-        let color = (255.0 * julia(c, ITERATIONS)) as u8;
+        //let iteration_factor = mandelbrot(c, ITERATIONS);
+        let iteration_factor = julia(c, ITERATIONS);
         let active;
-        if color < 40 {
+        if iteration_factor < 0.1 {
             active = false;
         } else {
             active = true;
         }
+        let color = Color::gray_gradient(iteration_factor);
 
-        field[x][y] = Pixel {coordinate: Coordinate {x: x + OFFSET.x, y: y + OFFSET.y}, color: Color::gray(color), active: active};
+        field[x][y] = Pixel {coordinate: Coordinate {x: x + OFFSET.x, y: y + OFFSET.y}, color: color, active: active};
     }
 
     let serialised_buffer = field.serialise();
