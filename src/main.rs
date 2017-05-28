@@ -17,7 +17,7 @@ use coordinate::Coordinate;
 use coordinate::Dimension;
 
 fn main() {
-    const ITERATIONS : u8 = 1000;
+    const ITERATIONS : u32 = 1000;
     const DIMENSION : Dimension = Dimension {width: 1920, height: 1200};
     const OFFSET : Coordinate = Coordinate {x: 0, y: 0};
 
@@ -33,15 +33,15 @@ fn main() {
             imag: (y as f64 / DIMENSION.height as f64) * fractal_height - fractal_height/2.0 + fractal_y_offset,
         };
 
+        const ACTIVE_THRESHOLD : f64 = 0.0;
         //let iteration_factor = mandelbrot(c, ITERATIONS);
         let iteration_factor = julia(c, ITERATIONS);
         let active;
-        if iteration_factor < 0.0 {
+        if iteration_factor < ACTIVE_THRESHOLD {
             active = false;
         } else {
             active = true;
         }
-        let active = true;
         let color = Color::gradient24(iteration_factor);
 
         field[x][y] = Pixel {coordinate: Coordinate {x: x + OFFSET.x, y: y + OFFSET.y}, color: color, active: active};
@@ -88,18 +88,18 @@ fn main() {
 
     let mut threads = vec![];
 
-    for i in 0..CONNECTIONS {
+    for _ in 0..CONNECTIONS {
         let mut connection = connections.pop().unwrap();
         let command = connection_commands.pop().unwrap();
 
         threads.push(thread::spawn(move || {
             loop {
-                connection.write(&(command.as_bytes()));
+                let _ = connection.write(&(command.as_bytes()));
             }
         }));
     }
 
     for thread in threads {
-        thread.join();
+        let _ = thread.join();
     }
 }

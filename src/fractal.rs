@@ -1,7 +1,7 @@
 use complex::Complex;
 use complex::abs;
 
-pub fn mandelbrot(c: Complex, iterations: u8) -> f64 {
+pub fn mandelbrot(c: Complex, iterations: u32) -> f64 {
     let mut z = Complex { real: 0.0, imag: 0.0 };
     for i in 0..iterations {
         if abs(z) > 2.0 {
@@ -13,7 +13,7 @@ pub fn mandelbrot(c: Complex, iterations: u8) -> f64 {
     return 1.0;
 }
 
-pub fn julia(z: Complex, iterations: u8) -> f64 {
+pub fn julia(z: Complex, iterations: u32) -> f64 {
     let mut z = z;
     let c = Complex {real: -0.6, imag: 0.6};
     for i in 0..iterations {
