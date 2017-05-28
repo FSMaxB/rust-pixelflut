@@ -1,7 +1,6 @@
 extern crate rand;
 use std::io::prelude::*;
 use std::net::TcpStream;
-use std::process::exit;
 use std::thread;
 
 mod complex;
@@ -17,16 +16,10 @@ use coordinate::Coordinate;
 use coordinate::Dimension;
 
 fn main() {
-    let tcp_option = TcpStream::connect("94.45.231.39:1234");
-    if !tcp_option.is_ok() {
-        println!("Failed to open TCP stream.");
-        exit(1);
-    }
-    let mut tcp_stream = tcp_option.unwrap();
     const ITERATIONS : u8 = 30;
-    const WIDTH : usize = 600;
+    const WIDTH : usize = 900;
     const DIMENSION : Dimension = Dimension {width: WIDTH, height: (2 * WIDTH) / 3};
-    const OFFSET : Coordinate = Coordinate {x: 1020, y: 0};
+    const OFFSET : Coordinate = Coordinate {x: 1120, y: 0};
 
     let mut field = Field::new(DIMENSION);
 
