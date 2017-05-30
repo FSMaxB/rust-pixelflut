@@ -87,12 +87,13 @@ impl Field {
 
     pub fn serialise(&self) -> Vec<Pixel> {
         let pixels = self.dimension.pixels();
-        let mut serialised = vec![Pixel::null(); pixels];
+        let mut serialised = vec![];
+        serialised.reserve(pixels);
         for index in 0..pixels {
             let x = index % self.dimension.width;
             let y = index / self.dimension.width;
 
-            serialised[index] = self.field[x][y];
+            serialised.push(self.field[x][y]);
         }
 
         let mut rng = rand::thread_rng();
@@ -124,6 +125,7 @@ pub struct FieldCoordinatesIterator {
     index : usize,
 }
 
+/// Iterator for iteraing over `(x, y)` coordinate tuples of Pixels of a `Field`
 impl FieldCoordinatesIterator {
     pub fn new(field: &Field) -> FieldCoordinatesIterator {
         FieldCoordinatesIterator {dimension: field.dimension, index: 0}

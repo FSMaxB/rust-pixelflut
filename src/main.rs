@@ -81,13 +81,6 @@ fn main() {
         connection_commands.push(command);
     }
 
-    /*let mut command_buffer = (&serialised_buffer[1]).to_string();
-    {
-        for pixel in &serialised_buffer {
-            command_buffer += &(pixel.to_string());
-        }
-    }*/
-
     let mut threads = vec![];
 
     for _ in 0..CONNECTIONS {
