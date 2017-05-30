@@ -21,6 +21,8 @@ fn main() {
     const DIMENSION : Dimension = Dimension {width: 1920, height: 1200};
     const OFFSET : Coordinate = Coordinate {x: 0, y: 0};
 
+    let host = std::env::args().nth(1).expect("Expected host:port as command line argument!");
+
     let mut field = Field::new(DIMENSION);
 
     for (x, y) in field.coordinates_iterator() {
@@ -54,7 +56,7 @@ fn main() {
     let mut connections = vec![];
 
     for i in 0..CONNECTIONS {
-        let tcp_result = TcpStream::connect("94.45.231.39:1234");
+        let tcp_result = TcpStream::connect(&host);
         if !tcp_result.is_ok() {
             println!("Failed to open TCP stream {}.", i);
         } else {
