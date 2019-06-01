@@ -1,0 +1,21 @@
+host = "pixl.gulasch.pw"
+port = 1234
+connections = 1
+style = "Julia"
+
+[dimension]
+width = 200
+height = 100
+
+[offset]
+x = 0
+y = 0
+
+[fractal]
+iterations = 1000
+active_threshold = 0.0
+
+[fractal.initial_value]
+real = -0.79
+imag = 0.15
+

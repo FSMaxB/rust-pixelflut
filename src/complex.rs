@@ -4,8 +4,9 @@ use std::ops::Neg;
 use std::ops::Sub;
 use std::ops::Mul;
 use std::ops::Div;
+use serde_derive::Deserialize;
 
-#[derive(Copy,Clone)]
+#[derive(Copy, Clone, Debug, Deserialize)]
 pub struct Complex {
     pub real: f64,
     pub imag: f64

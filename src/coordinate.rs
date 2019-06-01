@@ -1,6 +1,7 @@
 use std::string::ToString;
+use serde_derive::Deserialize;
 
-#[derive(Copy,Clone)]
+#[derive(Copy, Clone, Debug, Deserialize)]
 pub struct Coordinate {
     pub x: usize,
     pub y: usize
@@ -12,7 +13,7 @@ impl ToString for Coordinate {
     }
 }
 
-#[derive(Copy,Clone)]
+#[derive(Copy, Clone, Debug, Deserialize)]
 pub struct Dimension {
     pub width: usize,
     pub height: usize

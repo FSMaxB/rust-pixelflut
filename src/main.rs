@@ -7,6 +7,8 @@ mod complex;
 mod fractal;
 mod pixel;
 mod coordinate;
+mod settings;
+
 use complex::Complex;
 use fractal::mandelbrot;
 use fractal::julia;
@@ -15,48 +17,45 @@ use pixel::Color;
 use pixel::Field;
 use coordinate::Coordinate;
 use coordinate::Dimension;
+use crate::settings::Settings;
 
 fn main() {
-    const ITERATIONS : u32 = 1000;
-    const DIMENSION : Dimension = Dimension {width: 1920, height: 1200};
-    const OFFSET : Coordinate = Coordinate {x: 0, y: 0};
+    let settings = Settings::new()
+        .map_err(|error| eprintln!("Failed to read config with error: {}", error))
+        .unwrap();
 
-    let host = std::env::args().nth(1).expect("Expected host:port as command line argument!");
-
-    let mut field = Field::new(DIMENSION);
+    let mut field = Field::new(settings.dimension);
 
     for (x, y) in field.coordinates_iterator() {
         let fractal_width = 4.0;
-        let fractal_height = (DIMENSION.height as f64 / DIMENSION.width as f64) * fractal_width;
+        let fractal_height = (settings.dimension.height as f64 / settings.dimension.width as f64) * fractal_width;
         let fractal_x_offset = 0.0;
         let fractal_y_offset = 0.0;
         let c = Complex {
-            real: (x as f64 / DIMENSION.width as f64) * fractal_width - fractal_width/2.0 + fractal_x_offset,
-            imag: (y as f64 / DIMENSION.height as f64) * fractal_height - fractal_height/2.0 + fractal_y_offset,
+            real: (x as f64 / settings.dimension.width as f64) * fractal_width - fractal_width/2.0 + fractal_x_offset,
+            imag: (y as f64 / settings.dimension.height as f64) * fractal_height - fractal_height/2.0 + fractal_y_offset,
         };
 
-        const ACTIVE_THRESHOLD : f64 = 0.0;
-        //let iteration_factor = mandelbrot(c, ITERATIONS);
-        let iteration_factor = julia(c, ITERATIONS);
+        //let iteration_factor = mandelbrot(c, settings.fractal.iterations);
+        let iteration_factor = julia(c, settings.fractal.iterations);
         let active;
-        if iteration_factor < ACTIVE_THRESHOLD {
+        if iteration_factor < settings.fractal.active_threshold {
             active = false;
         } else {
             active = true;
         }
         let color = Color::gradient24(iteration_factor);
 
-        field[x][y] = Pixel {coordinate: Coordinate {x: x + OFFSET.x, y: y + OFFSET.y}, color: color, active: active};
+        field[x][y] = Pixel {coordinate: Coordinate {x: x + settings.offset.x, y: y + settings.offset.y}, color: color, active: active};
     }
 
     let serialised_buffer = field.serialise();
 
-    const CONNECTIONS : usize = 1;
-
     let mut connections = vec![];
 
-    for i in 0..CONNECTIONS {
-        let tcp_result = TcpStream::connect(&host);
+    let host_and_port = format!("{}:{}", settings.host, settings.port);
+    for i in 0..settings.connections {
+        let tcp_result = TcpStream::connect(&host_and_port);
         if !tcp_result.is_ok() {
             println!("Failed to open TCP stream {}.", i);
         } else {
@@ -66,9 +65,9 @@ fn main() {
         connections.push(tcp_result.unwrap());
     }
 
-    let divisor = serialised_buffer.len() / CONNECTIONS;
+    let divisor = serialised_buffer.len() / settings.connections;
     let mut connection_slices = vec![];
-    for i in 0..CONNECTIONS {
+    for i in 0..settings.connections {
         connection_slices.push(&serialised_buffer[(i*divisor)..((i+1)*divisor)]);
     }
 
@@ -83,7 +82,7 @@ fn main() {
 
     let mut threads = vec![];
 
-    for _ in 0..CONNECTIONS {
+    for connection_number in 0..settings.connections {
         let mut connection = connections.pop().unwrap();
         let command = connection_commands.pop().unwrap();
 
