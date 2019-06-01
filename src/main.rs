@@ -1,6 +1,6 @@
 extern crate rand;
 use std::io::prelude::*;
-use std::net::TcpStream;
+use std::net::{TcpStream, Shutdown};
 use std::thread;
 
 mod complex;
@@ -22,6 +22,10 @@ use crate::settings::{Settings, Style};
 use crate::settings::Style::Mandelbrot;
 use std::time::Duration;
 use crate::images::image_to_field;
+use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
+use core::borrow::{Borrow, BorrowMut};
+use std::sync::atomic::Ordering;
 
 fn main() {
     let settings = Settings::new()
@@ -94,12 +98,22 @@ fn main() {
 
     let mut threads = vec![];
 
+    let keep_running = Arc::new(AtomicBool::new(true));
+    {
+        let keep_running_copy = keep_running.clone();
+        ctrlc::set_handler(move || {
+            eprintln!("Ctrl-C pressed");
+            keep_running_copy.store(false, Ordering::SeqCst);
+        }).expect("Failed to set Ctrl-C handler.");
+    }
+
     for connection_number in 0..settings.connections {
         let mut connection = connections.pop().unwrap();
         let command = connection_commands.pop().unwrap();
 
+        let keep_running = keep_running.clone();
         threads.push(thread::spawn(move || {
-            for current_try in 1..4 {
+            'retry: for current_try in 1..4 {
                 loop {
                     let result = connection.write(&(command.as_bytes()))
                         .map_err(|error| eprintln!("Error: {}", error));
@@ -107,9 +121,14 @@ fn main() {
                         eprintln!("Failed writing on connection {}, aborting.", connection_number);
                         break;
                     }
+                    if !keep_running.load(Ordering::SeqCst) {
+                        eprintln!("Aborted. Closing connection.");
+                        break 'retry;
+                    }
                 }
                 thread::sleep(Duration::from_secs(1));
             }
+            connection.shutdown(Shutdown::Both);
         }));
     }
 
