@@ -88,7 +88,11 @@ fn main() {
 
         threads.push(thread::spawn(move || {
             loop {
-                let _ = connection.write(&(command.as_bytes()));
+                let result = connection.write(&(command.as_bytes()));
+                if result.is_err() {
+                    eprintln!("Failed writing on connection {}, aborting.", connection_number);
+                    break;
+                }
             }
         }));
     }
