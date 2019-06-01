@@ -27,11 +27,11 @@ impl Color {
 
     pub fn gradient24(value: f64) -> Color {
         let value32 = (value * u32::MAX as f64) as u32;
-        let blue = ((value32 >> 0) as u8);
-        let green = ((value32 >> 8) as u8);
-        let red = ((value32 >> 16) as u8);
+        let blue = ((value32 >> 0) & 0xff) as u8;
+        let green = ((value32 >> 8) & 0xff) as u8;
+        let red = ((value32 >> 16) & 0xff) as u8;
 
-        Color {red: red, blue: blue, green: green, alpha: None}
+        Color {red, blue, green, alpha: None}
     }
 
     pub fn gray_gradient(value: f64) -> Color {
@@ -43,7 +43,7 @@ impl Color {
 impl ToString for Color {
     fn to_string(&self) -> String {
         match self.alpha {
-            Some(u8) => format!("{:02x}{:02x}{:02x}{:02x}", self.red, self.green, self.blue, self.alpha.unwrap()),
+            Some(alpha) => format!("{:02x}{:02x}{:02x}{:02x}", self.red, self.green, self.blue, alpha),
             None => format!("{:02x}{:02x}{:02x}", self.red, self.green, self.blue),
         }
     }
@@ -80,7 +80,7 @@ impl Field {
     pub fn new(dimension: Dimension) -> Field {
         Field {
             field: vec![vec![Pixel::null(); dimension.height]; dimension.width],
-            dimension: dimension,
+            dimension,
         }
     }
 
