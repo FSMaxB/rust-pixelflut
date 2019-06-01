@@ -1,10 +1,9 @@
-use coordinate::Coordinate;
-use coordinate::Dimension;
+use crate::coordinate::Coordinate;
+use crate::coordinate::Dimension;
 use std::ops::Index;
 use std::ops::IndexMut;
 use std::option::Option;
 use std::string::ToString;
-extern crate rand;
 use rand::Rng;
 use std::iter::Iterator;
 use std::u32;

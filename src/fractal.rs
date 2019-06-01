@@ -1,5 +1,5 @@
-use complex::Complex;
-use complex::abs;
+use crate::complex::Complex;
+use crate::complex::abs;
 
 pub fn mandelbrot(c: Complex, iterations: u32) -> f64 {
     let mut z = Complex { real: 0.0, imag: 0.0 };
