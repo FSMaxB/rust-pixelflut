@@ -17,37 +17,45 @@ use pixel::Color;
 use pixel::Field;
 use coordinate::Coordinate;
 use coordinate::Dimension;
-use crate::settings::Settings;
+use crate::settings::{Settings, Style};
+use crate::settings::Style::Mandelbrot;
+use std::time::Duration;
 
 fn main() {
     let settings = Settings::new()
         .map_err(|error| eprintln!("Failed to read config with error: {}", error))
         .unwrap();
 
-    let mut field = Field::new(settings.dimension);
+    let field = match settings.style {
+        Style::Julia | Style::Mandelbrot => {
+            let mut field = Field::new(settings.dimension);
 
-    for (x, y) in field.coordinates_iterator() {
-        let fractal_width = 4.0;
-        let fractal_height = (settings.dimension.height as f64 / settings.dimension.width as f64) * fractal_width;
-        let fractal_x_offset = 0.0;
-        let fractal_y_offset = 0.0;
-        let c = Complex {
-            real: (x as f64 / settings.dimension.width as f64) * fractal_width - fractal_width/2.0 + fractal_x_offset,
-            imag: (y as f64 / settings.dimension.height as f64) * fractal_height - fractal_height/2.0 + fractal_y_offset,
-        };
+            for (x, y) in field.coordinates_iterator() {
+                let fractal_width = 4.0;
+                let fractal_height = (settings.dimension.height as f64 / settings.dimension.width as f64) * fractal_width;
+                let fractal_x_offset = 0.0;
+                let fractal_y_offset = 0.0;
+                let c = Complex {
+                    real: (x as f64 / settings.dimension.width as f64) * fractal_width - fractal_width/2.0 + fractal_x_offset,
+                    imag: (y as f64 / settings.dimension.height as f64) * fractal_height - fractal_height/2.0 + fractal_y_offset,
+                };
 
-        //let iteration_factor = mandelbrot(c, settings.fractal.iterations);
-        let iteration_factor = julia(c, settings.fractal.iterations);
-        let active;
-        if iteration_factor < settings.fractal.active_threshold {
-            active = false;
-        } else {
-            active = true;
-        }
-        let color = Color::gradient24(iteration_factor);
+                let iteration_factor = match settings.style {
+                    Style::Julia => julia(c, settings.fractal.iterations),
+                    Style::Mandelbrot => mandelbrot(c, settings.fractal.iterations),
+                };
+                let active= if iteration_factor < settings.fractal.active_threshold {
+                    false
+                } else {
+                    true
+                };
+                let color = Color::gradient24(iteration_factor);
 
-        field[x][y] = Pixel {coordinate: Coordinate {x: x + settings.offset.x, y: y + settings.offset.y}, color: color, active: active};
-    }
+                field[x][y] = Pixel {coordinate: Coordinate {x: x + settings.offset.x, y: y + settings.offset.y}, color, active};
+            }
+            field
+        },
+    };
 
     let serialised_buffer = field.serialise();
 
@@ -87,12 +95,15 @@ fn main() {
         let command = connection_commands.pop().unwrap();
 
         threads.push(thread::spawn(move || {
-            loop {
-                let result = connection.write(&(command.as_bytes()));
-                if result.is_err() {
-                    eprintln!("Failed writing on connection {}, aborting.", connection_number);
-                    break;
+            for current_try in 1..4 {
+                loop {
+                    let result = connection.write(&(command.as_bytes()));
+                    if result.is_err() {
+                        eprintln!("Failed writing on connection {}, aborting.", connection_number);
+                        break;
+                    }
                 }
+                thread::sleep(Duration::from_secs(1));
             }
         }));
     }
