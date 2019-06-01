@@ -1,21 +1,24 @@
 host = "pixl.gulasch.pw"
 port = 1234
-connections = 1
-style = "Julia"
+connections = 8
+style = "Image"
 
 [dimension]
 width = 200
-height = 100
+height = 200
 
 [offset]
-x = 0
-y = 0
+x = 100
+y = 300
+
+[image]
+path = "image.jpg"
 
 [fractal]
-iterations = 1000
+iterations = 100
 active_threshold = 0.0
 
 [fractal.initial_value]
-real = -0.79
-imag = 0.15
+real = -0.6
+imag = 0.6
 

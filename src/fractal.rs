@@ -13,9 +13,9 @@ pub fn mandelbrot(c: Complex, iterations: u32) -> f64 {
     return 1.0;
 }
 
-pub fn julia(z: Complex, iterations: u32) -> f64 {
+pub fn julia(z: Complex, initial_value: Complex, iterations: u32) -> f64 {
     let mut z = z;
-    let c = Complex {real: -0.6, imag: 0.6};
+    let c = initial_value;
     for i in 0..iterations {
         if abs(z) > 4.0 {
             return i as f64 / iterations as f64;
