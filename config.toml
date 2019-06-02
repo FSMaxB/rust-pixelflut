@@ -2,6 +2,7 @@ host = "pixl.gulasch.pw"
 port = 1234
 connections = 8
 style = "Image"
+timeout = 300
 
 [dimension]
 width = 200

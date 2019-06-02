@@ -109,7 +109,7 @@ fn main() {
 
     for connection_number in 0..settings.connections {
         let mut connection = connections.pop().unwrap();
-        connection.set_write_timeout(Some(Duration::from_secs(10)));
+        connection.set_write_timeout(Some(Duration::from_secs(settings.timeout)));
         let command = connection_commands.pop().unwrap();
 
         let keep_running = keep_running.clone();

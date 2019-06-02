@@ -14,6 +14,7 @@ pub struct Settings {
     pub dimension: Dimension,
     pub offset: Coordinate,
     pub connections: usize,
+    pub timeout: u64,
 }
 
 #[derive(Debug, Deserialize)]
