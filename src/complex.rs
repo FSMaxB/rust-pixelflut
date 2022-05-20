@@ -1,15 +1,15 @@
+use serde::Deserialize;
 use std::f64;
 use std::ops::Add;
+use std::ops::Div;
+use std::ops::Mul;
 use std::ops::Neg;
 use std::ops::Sub;
-use std::ops::Mul;
-use std::ops::Div;
-use serde_derive::Deserialize;
 
 #[derive(Copy, Clone, Debug, Deserialize)]
 pub struct Complex {
     pub real: f64,
-    pub imag: f64
+    pub imag: f64,
 }
 
 impl Add for Complex {
@@ -18,7 +18,7 @@ impl Add for Complex {
     fn add(self, other: Complex) -> Complex {
         Complex {
             real: self.real + other.real,
-            imag: self.imag + other.imag
+            imag: self.imag + other.imag,
         }
     }
 }
@@ -29,7 +29,7 @@ impl Mul for Complex {
     fn mul(self, other: Complex) -> Complex {
         Complex {
             real: self.real * other.real - self.imag * other.imag,
-            imag: self.real * other.imag + self.imag * other.real
+            imag: self.real * other.imag + self.imag * other.real,
         }
     }
 }
@@ -40,7 +40,7 @@ impl Sub for Complex {
     fn sub(self, other: Complex) -> Complex {
         Complex {
             real: self.real - other.real,
-            imag: self.imag - other.imag
+            imag: self.imag - other.imag,
         }
     }
 }
@@ -51,7 +51,7 @@ impl Neg for Complex {
     fn neg(self) -> Complex {
         Complex {
             real: -self.real,
-            imag: -self.imag
+            imag: -self.imag,
         }
     }
 }
@@ -61,9 +61,10 @@ impl Div for Complex {
 
     fn div(self, other: Complex) -> Complex {
         Complex {
-            real: ((self.real * other.real) + (self.imag * other.imag)) / ((other.real * other.real) + (other.imag * other.imag)),
-            imag: ((self.imag * other.real) - (self.real * other.imag)) / ((other.real * other.real) + (other.imag * other.imag))
-
+            real: ((self.real * other.real) + (self.imag * other.imag))
+                / ((other.real * other.real) + (other.imag * other.imag)),
+            imag: ((self.imag * other.real) - (self.real * other.imag))
+                / ((other.real * other.real) + (other.imag * other.imag)),
         }
     }
 }

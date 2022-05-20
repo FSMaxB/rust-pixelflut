@@ -1,18 +1,18 @@
-use crate::coordinate::{Dimension, Coordinate};
-use crate::pixel::{Field, Pixel, Color};
-use image::jpeg::JPEGDecoder;
-use image::GenericImage;
-use image::DynamicImage;
-use image::{ImageDecoder, FilterType};
-use std::path::{Path, PathBuf};
-use std::fs::File;
+use crate::coordinate::{Coordinate, Dimension};
+use crate::pixel::{Color, Field, Pixel};
+use image::imageops::FilterType;
+use std::path::PathBuf;
 
 pub fn image_to_field(dimension: Dimension, offset: Coordinate, filename: &str) -> Field {
     let path = PathBuf::from(filename);
-    let mut image = image::open(&path).expect("Failed to load image.");
+    let image = image::open(&path).expect("Failed to load image.");
 
-    let resized = image.resize(dimension.width as u32, dimension.height as u32, FilterType::Gaussian);
-    let rgb = resized.to_rgb();
+    let resized = image.resize(
+        dimension.width as u32,
+        dimension.height as u32,
+        FilterType::Gaussian,
+    );
+    let rgb = resized.to_rgb8();
 
     let mut field = Field::new(dimension);
     for x in 0..dimension.width {
@@ -24,10 +24,10 @@ pub fn image_to_field(dimension: Dimension, offset: Coordinate, filename: &str) 
                     y: y + offset.y,
                 },
                 color: Color {
-                    red: pixel.data[0],
-                    green: pixel.data[1],
-                    blue: pixel.data[2],
-                    alpha: None
+                    red: pixel[0],
+                    green: pixel[1],
+                    blue: pixel[2],
+                    alpha: None,
                 },
                 active: true,
             }

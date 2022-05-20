@@ -1,8 +1,11 @@
-use crate::complex::Complex;
 use crate::complex::abs;
+use crate::complex::Complex;
 
 pub fn mandelbrot(c: Complex, iterations: u32) -> f64 {
-    let mut z = Complex { real: 0.0, imag: 0.0 };
+    let mut z = Complex {
+        real: 0.0,
+        imag: 0.0,
+    };
     for i in 0..iterations {
         if abs(z) > 2.0 {
             return i as f64 / iterations as f64;

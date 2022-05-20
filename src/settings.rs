@@ -1,8 +1,9 @@
 use crate::complex::Complex;
-use crate::Dimension;
 use crate::Coordinate;
-use serde_derive::Deserialize;
-use config::{ConfigError, Config, File};
+use crate::Dimension;
+use serde::Deserialize;
+use std::fs::File;
+use std::io::Read;
 
 #[derive(Debug, Deserialize)]
 pub struct Settings {
@@ -26,10 +27,11 @@ pub struct Image {
 pub struct Fractal {
     pub initial_value: Complex,
     pub iterations: u32,
-    pub active_threshold:f64,
+    pub active_threshold: f64,
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum Style {
     Mandelbrot,
     Julia,
@@ -37,10 +39,11 @@ pub enum Style {
 }
 
 impl Settings {
-    pub fn new() -> Result<Self, ConfigError> {
-        let mut config = Config::new();
-        config.merge(File::with_name("config"))?;
+    pub fn new() -> anyhow::Result<Self> {
+        let mut file = File::open("config.toml")?;
+        let mut text = String::new();
+        file.read_to_string(&mut text)?;
 
-        config.try_into()
+        Ok(toml::from_str(&text)?)
     }
 }
