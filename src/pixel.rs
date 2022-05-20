@@ -1,11 +1,11 @@
 use crate::coordinate::Coordinate;
 use crate::coordinate::Dimension;
 use rand::seq::SliceRandom;
+use std::fmt::{Display, Formatter};
 use std::iter::Iterator;
 use std::ops::Index;
 use std::ops::IndexMut;
 use std::option::Option;
-use std::string::ToString;
 use std::u32;
 
 #[derive(Copy, Clone)]
@@ -62,11 +62,15 @@ impl Color {
 	}
 }
 
-impl ToString for Color {
-	fn to_string(&self) -> String {
+impl Display for Color {
+	fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
 		match self.alpha {
-			Some(alpha) => format!("{:02x}{:02x}{:02x}{:02x}", self.red, self.green, self.blue, alpha),
-			None => format!("{:02x}{:02x}{:02x}", self.red, self.green, self.blue),
+			Some(alpha) => write!(
+				formatter,
+				"{:02x}{:02x}{:02x}{:02x}",
+				self.red, self.green, self.blue, alpha
+			),
+			None => write!(formatter, "{:02x}{:02x}{:02x}", self.red, self.green, self.blue),
 		}
 	}
 }
@@ -88,11 +92,11 @@ impl Pixel {
 	}
 }
 
-impl ToString for Pixel {
-	fn to_string(&self) -> String {
+impl Display for Pixel {
+	fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
 		match self.active {
-			true => format!("PX {} {}\n", self.coordinate.to_string(), self.color.to_string()),
-			false => "".to_string(),
+			true => writeln!(formatter, "PX {} {}\n", self.coordinate, self.color),
+			false => Ok(()),
 		}
 	}
 }

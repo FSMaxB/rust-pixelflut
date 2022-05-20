@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use std::string::ToString;
+use std::fmt::{Display, Formatter};
 
 #[derive(Copy, Clone, Debug, Deserialize)]
 pub struct Coordinate {
@@ -7,9 +7,9 @@ pub struct Coordinate {
 	pub y: usize,
 }
 
-impl ToString for Coordinate {
-	fn to_string(&self) -> String {
-		format!("{} {}", self.x, self.y)
+impl Display for Coordinate {
+	fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
+		write!(formatter, "{} {}", self.x, self.y)
 	}
 }
 
