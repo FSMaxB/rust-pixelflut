@@ -4,34 +4,30 @@ use image::imageops::FilterType;
 use std::path::PathBuf;
 
 pub fn image_to_field(dimension: Dimension, offset: Coordinate, filename: &str) -> Field {
-    let path = PathBuf::from(filename);
-    let image = image::open(&path).expect("Failed to load image.");
+	let path = PathBuf::from(filename);
+	let image = image::open(&path).expect("Failed to load image.");
 
-    let resized = image.resize(
-        dimension.width as u32,
-        dimension.height as u32,
-        FilterType::Gaussian,
-    );
-    let rgb = resized.to_rgb8();
+	let resized = image.resize(dimension.width as u32, dimension.height as u32, FilterType::Gaussian);
+	let rgb = resized.to_rgb8();
 
-    let mut field = Field::new(dimension);
-    for x in 0..dimension.width {
-        for y in 0..dimension.height {
-            let pixel = rgb.get_pixel(x as u32, y as u32);
-            field[x][y] = Pixel {
-                coordinate: Coordinate {
-                    x: x + offset.x,
-                    y: y + offset.y,
-                },
-                color: Color {
-                    red: pixel[0],
-                    green: pixel[1],
-                    blue: pixel[2],
-                    alpha: None,
-                },
-                active: true,
-            }
-        }
-    }
-    field
+	let mut field = Field::new(dimension);
+	for x in 0..dimension.width {
+		for y in 0..dimension.height {
+			let pixel = rgb.get_pixel(x as u32, y as u32);
+			field[x][y] = Pixel {
+				coordinate: Coordinate {
+					x: x + offset.x,
+					y: y + offset.y,
+				},
+				color: Color {
+					red: pixel[0],
+					green: pixel[1],
+					blue: pixel[2],
+					alpha: None,
+				},
+				active: true,
+			}
+		}
+	}
+	field
 }
