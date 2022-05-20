@@ -6,9 +6,11 @@ use std::thread;
 mod complex;
 mod coordinate;
 mod fractal;
+mod frame_painter;
 mod frame_serializer;
 mod images;
 mod pixel;
+mod pixel_backend;
 mod settings;
 
 use crate::images::image_to_field;
