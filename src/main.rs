@@ -6,6 +6,7 @@ use std::thread;
 mod complex;
 mod coordinate;
 mod fractal;
+mod frame_serializer;
 mod images;
 mod pixel;
 mod settings;
