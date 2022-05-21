@@ -19,12 +19,7 @@ pub fn image_to_field(dimension: Dimension, offset: Coordinate, filename: &str) 
 					x: x + offset.x,
 					y: y + offset.y,
 				},
-				color: Color {
-					red: pixel[0],
-					green: pixel[1],
-					blue: pixel[2],
-					alpha: None,
-				},
+				color: Color::rgb(pixel[0], pixel[1], pixel[2]),
 				active: true,
 			}
 		}
