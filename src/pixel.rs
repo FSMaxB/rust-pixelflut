@@ -91,6 +91,8 @@ pub struct Pixel {
 }
 
 impl Pixel {
+	pub const BYTE_ESTIMATE: usize = 20; // "PX 1920 1080 FFFFFF\n"
+
 	pub fn null() -> Pixel {
 		Pixel {
 			coordinate: Coordinate::null(),
