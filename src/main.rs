@@ -1,7 +1,7 @@
 extern crate rand;
-use std::io::prelude::*;
-use std::net::{Shutdown, TcpStream};
+use std::net::ToSocketAddrs;
 use std::thread;
+use std::time::Duration;
 
 mod complex;
 mod coordinate;
@@ -13,28 +13,22 @@ mod pixel;
 mod pixel_backend;
 mod settings;
 
-use crate::images::image_to_field;
+use crate::frame_painter::io_uring::IoUringFramePainter;
+use crate::frame_painter::FramePainter;
 use crate::settings::{Settings, Style};
-use complex::Complex;
+use anyhow::Context;
 use coordinate::Coordinate;
 use coordinate::Dimension;
-use fractal::julia;
-use fractal::mandelbrot;
-use pixel::Color;
-use pixel::Field;
 use pixel::Pixel;
-use std::sync::atomic::AtomicBool;
-use std::sync::atomic::Ordering;
-use std::sync::Arc;
-use std::time::Duration;
 
-fn main() {
+fn main() -> anyhow::Result<()> {
 	let settings = Settings::new()
 		.map_err(|error| eprintln!("Failed to read config with error: {}", error))
 		.unwrap();
 
-	let field = match settings.style {
+	let image = match settings.style {
 		Style::Julia | Style::Mandelbrot => {
+			/*
 			let mut field = Field::new(settings.dimension);
 
 			for (x, y) in field.coordinates_iterator() {
@@ -70,87 +64,26 @@ fn main() {
 				};
 			}
 			field
+
+			 */
+			todo!()
 		}
-		Style::Image => image_to_field(settings.dimension, settings.offset, &settings.image.path),
+		Style::Image => image::open(settings.image.path).context("Failed to load image.")?,
 	};
 
-	let serialised_buffer = field.serialise();
+	let socket_address = format!("{}:{}", settings.host, settings.port)
+		.to_socket_addrs()?
+		.into_iter()
+		.next()
+		.unwrap();
+	dbg!(socket_address);
+	let mut frame_painter = IoUringFramePainter::start(socket_address, image);
 
-	let mut connections = vec![];
+	frame_painter.update_dimensions(settings.dimension);
+	frame_painter.update_position(settings.offset);
+	frame_painter.update_stream_count(settings.connections);
 
-	let host_and_port = format!("{}:{}", settings.host, settings.port);
-	for i in 0..settings.connections {
-		let stream = match TcpStream::connect(&host_and_port) {
-			Ok(stream) => {
-				println!("Opened TCP stream {i}.");
-				stream
-			}
-			Err(error) => {
-				println!("Failed to open TCP stream {i}: {error}.");
-				return;
-			}
-		};
-
-		connections.push(stream);
-	}
-
-	let divisor = serialised_buffer.len() / settings.connections;
-	let mut connection_slices = vec![];
-	for i in 0..settings.connections {
-		connection_slices.push(&serialised_buffer[(i * divisor)..((i + 1) * divisor)]);
-	}
-
-	let mut connection_commands = vec![];
-	for slice in connection_slices {
-		let mut command = "".to_string();
-		for pixel in slice {
-			command += &(pixel.to_string());
-		}
-		connection_commands.push(command);
-	}
-
-	let mut threads = vec![];
-
-	let keep_running = Arc::new(AtomicBool::new(true));
-	{
-		let keep_running_copy = keep_running.clone();
-		ctrlc::set_handler(move || {
-			eprintln!("Ctrl-C pressed");
-			keep_running_copy.store(false, Ordering::SeqCst);
-		})
-		.expect("Failed to set Ctrl-C handler.");
-	}
-
-	for connection_number in 0..settings.connections {
-		let mut connection = connections.pop().unwrap();
-		connection
-			.set_write_timeout(Some(Duration::from_secs(settings.timeout)))
-			.unwrap();
-		let command = connection_commands.pop().unwrap();
-
-		let keep_running = keep_running.clone();
-		threads.push(thread::spawn(move || {
-			'retry: for _ in 1..4 {
-				loop {
-					let result = connection
-						.write(command.as_bytes())
-						.map_err(|error| eprintln!("Error: {}", error));
-					if result.is_err() {
-						eprintln!("Failed writing on connection {}, aborting.", connection_number);
-						break;
-					}
-					if !keep_running.load(Ordering::SeqCst) {
-						eprintln!("Aborted. Closing connection.");
-						break 'retry;
-					}
-				}
-				thread::sleep(Duration::from_secs(1));
-			}
-			let _ = connection.shutdown(Shutdown::Both);
-		}));
-	}
-
-	for thread in threads {
-		let _ = thread.join();
+	loop {
+		thread::sleep(Duration::from_secs(10));
 	}
 }

@@ -11,6 +11,7 @@ image = "0.24"
 ctrlc = "3"
 toml = "0.5"
 anyhow = "1"
-tokio-uring = "0.3.0"
+# https://github.com/tokio-rs/tokio-uring/pull/52 hasn't been release yet.
+tokio-uring = {git = "https://github.com/tokio-rs/tokio-uring"}
 tokio = {version = "1", features = ["rt", "time", "sync", "parking_lot"]}
 parking_lot = "0.12"

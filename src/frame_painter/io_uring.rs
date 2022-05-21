@@ -23,9 +23,13 @@ pub struct IoUringFramePainter {
 }
 
 impl IoUringFramePainter {
-	pub fn start(ip: SocketAddr, frame: DynamicImage) -> IoUringFramePainter {
+	pub fn start(socket_address: SocketAddr, frame: DynamicImage) -> IoUringFramePainter {
 		let (update_sender, update_receiver) = mpsc::channel(2);
-		let _ = thread::spawn(move || tokio_uring::start(run_io(ip, update_receiver)));
+		thread::spawn(move || {
+			if let Err(error) = tokio_uring::start(run_io(socket_address, update_receiver)) {
+				println!("Framepainter failed: {error}");
+			}
+		});
 		Self {
 			resizer: FrameResizer::from(frame),
 			update_sender,
@@ -78,7 +82,7 @@ impl FramePainter for IoUringFramePainter {
 	}
 
 	fn update_position(&mut self, position: Coordinate) {
-		let frame = self.resizer.resized_frame().clone();
+		let frame = self.resizer.resized_frame();
 		self.position = position;
 		let _ = self.update_sender.try_send(Update {
 			frame,
@@ -89,7 +93,7 @@ impl FramePainter for IoUringFramePainter {
 	}
 
 	fn update_stream_count(&mut self, count: usize) {
-		let frame = self.resizer.resized_frame().clone();
+		let frame = self.resizer.resized_frame();
 		self.stream_count = count;
 		let _ = self.update_sender.try_send(Update {
 			frame,
@@ -100,7 +104,7 @@ impl FramePainter for IoUringFramePainter {
 	}
 
 	fn update_serializer(&mut self, serializer: Box<dyn FrameSerializer + 'static>) {
-		let frame = self.resizer.resized_frame().clone();
+		let frame = self.resizer.resized_frame();
 		self.serializer = serializer;
 		let _ = self.update_sender.try_send(Update {
 			frame,
@@ -118,7 +122,7 @@ struct Update {
 	position: Coordinate,
 }
 
-async fn run_io(ip: SocketAddr, mut update_receiver: mpsc::Receiver<Update>) -> anyhow::Result<Infallible> {
+async fn run_io(socket_address: SocketAddr, mut update_receiver: mpsc::Receiver<Update>) -> anyhow::Result<Infallible> {
 	let mut senders = Vec::<mpsc::Sender<Vec<u8>>>::new();
 	loop {
 		let Update {
@@ -130,6 +134,11 @@ async fn run_io(ip: SocketAddr, mut update_receiver: mpsc::Receiver<Update>) -> 
 			.recv()
 			.await
 			.ok_or_else(|| anyhow!("Update channel closed"))?;
+		if stream_count == 0 {
+			senders.clear();
+			continue;
+		}
+
 		match senders.len() {
 			length if length > stream_count => {
 				drop(senders.split_off(stream_count));
@@ -139,14 +148,19 @@ async fn run_io(ip: SocketAddr, mut update_receiver: mpsc::Receiver<Update>) -> 
 				for _ in senders.len()..stream_count {
 					let (sender, receiver) = mpsc::channel(1);
 					senders.push(sender);
-					let stream = match TcpStream::connect(ip).await {
+					let stream = match TcpStream::connect(socket_address).await {
 						Ok(stream) => stream,
 						Err(error) => {
 							println!("Connection failed, retrying on next update: {error}");
 							continue;
 						}
 					};
-					tokio_uring::spawn(async move { run_single_stream(stream, receiver).await });
+					println!("Connected");
+					tokio_uring::spawn(async move {
+						if let Err(error) = run_single_stream(stream, receiver).await {
+							println!("Stream task failed with: {error}");
+						}
+					});
 				}
 			}
 			_ => {}
@@ -186,7 +200,7 @@ async fn run_single_stream(stream: TcpStream, mut receiver: mpsc::Receiver<Vec<u
 		.ok_or_else(|| anyhow!("channel closed"))?
 		.slice(..);
 	loop {
-		if buffer.is_empty() {
+		if buffer.begin() == buffer.end() {
 			match receiver.try_recv() {
 				// New buffer is available
 				Ok(bytes) => buffer = bytes.slice(..),
