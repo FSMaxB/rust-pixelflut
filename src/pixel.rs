@@ -39,8 +39,12 @@ impl Color {
 		Rgba::from([red, green, blue, u8::MAX]).into()
 	}
 
+	pub fn rgba(red: u8, green: u8, blue: u8, alpha: u8) -> Self {
+		Rgba::from([red, green, blue, alpha]).into()
+	}
+
 	pub fn null() -> Color {
-		Self::rgb(0, 0, 0)
+		Self::rgba(0, 0, 0, 0)
 	}
 
 	#[allow(unused)]
@@ -66,17 +70,16 @@ impl Color {
 
 impl Display for Color {
 	fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
-		if self.alpha() < u8::MAX {
-			write!(
+		match self.alpha() {
+			u8::MAX => write!(formatter, "{:02x}{:02x}{:02x}", self.red(), self.green(), self.blue()),
+			alpha => write!(
 				formatter,
 				"{:02x}{:02x}{:02x}{:02x}",
 				self.red(),
 				self.green(),
 				self.blue(),
-				self.alpha()
-			)
-		} else {
-			write!(formatter, "{:02x}{:02x}{:02x}", self.red(), self.green(), self.blue(),)
+				alpha
+			),
 		}
 	}
 }
@@ -85,7 +88,6 @@ impl Display for Color {
 pub struct Pixel {
 	pub coordinate: Coordinate,
 	pub color: Color,
-	pub active: bool,
 }
 
 impl Pixel {
@@ -93,17 +95,17 @@ impl Pixel {
 		Pixel {
 			coordinate: Coordinate::null(),
 			color: Color::null(),
-			active: false,
 		}
 	}
 }
 
 impl Display for Pixel {
 	fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
-		match self.active {
-			true => writeln!(formatter, "PX {} {}\n", self.coordinate, self.color),
-			false => Ok(()),
+		if self.color.alpha() == 0 {
+			return Ok(());
 		}
+
+		writeln!(formatter, "PX {} {}\n", self.coordinate, self.color)
 	}
 }
 

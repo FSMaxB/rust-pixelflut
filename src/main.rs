@@ -55,12 +55,11 @@ fn main() {
 					Style::Mandelbrot => mandelbrot(c, settings.fractal.iterations),
 					_ => panic!("Not a fractal!"),
 				};
-				let active = if iteration_factor < settings.fractal.active_threshold {
-					false
+				let color = if iteration_factor < settings.fractal.active_threshold {
+					Color::null()
 				} else {
-					true
+					Color::gradient24(iteration_factor)
 				};
-				let color = Color::gradient24(iteration_factor);
 
 				field[x][y] = Pixel {
 					coordinate: Coordinate {
@@ -68,7 +67,6 @@ fn main() {
 						y: y + settings.offset.y,
 					},
 					color,
-					active,
 				};
 			}
 			field
