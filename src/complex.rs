@@ -70,5 +70,5 @@ impl Div for Complex {
 }
 
 pub fn abs(number: Complex) -> f64 {
-	return f64::sqrt(number.real * number.real + number.imag * number.imag);
+	f64::sqrt(number.real * number.real + number.imag * number.imag)
 }

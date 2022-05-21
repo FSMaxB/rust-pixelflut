@@ -54,7 +54,7 @@ impl Color {
 
 	pub fn gradient24(value: f64) -> Color {
 		let value32 = (value * u32::MAX as f64) as u32;
-		let blue = ((value32 >> 0) & 0xff) as u8;
+		let blue = (value32 & 0xff) as u8;
 		let green = ((value32 >> 8) & 0xff) as u8;
 		let red = ((value32 >> 16) & 0xff) as u8;
 
@@ -136,7 +136,7 @@ impl Field {
 		let mut rng = rand::thread_rng();
 		serialised.shuffle(&mut rng);
 
-		return serialised;
+		serialised
 	}
 
 	pub fn coordinates_iterator(&self) -> FieldCoordinatesIterator {

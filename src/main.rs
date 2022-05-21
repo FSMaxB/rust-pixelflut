@@ -80,14 +80,18 @@ fn main() {
 
 	let host_and_port = format!("{}:{}", settings.host, settings.port);
 	for i in 0..settings.connections {
-		let tcp_result = TcpStream::connect(&host_and_port);
-		if !tcp_result.is_ok() {
-			println!("Failed to open TCP stream {}.", i);
-		} else {
-			println!("Opened TCP stream {}.", i);
-		}
+		let stream = match TcpStream::connect(&host_and_port) {
+			Ok(stream) => {
+				println!("Opened TCP stream {i}.");
+				stream
+			}
+			Err(error) => {
+				println!("Failed to open TCP stream {i}: {error}.");
+				return;
+			}
+		};
 
-		connections.push(tcp_result.unwrap());
+		connections.push(stream);
 	}
 
 	let divisor = serialised_buffer.len() / settings.connections;
@@ -129,7 +133,7 @@ fn main() {
 			'retry: for _ in 1..4 {
 				loop {
 					let result = connection
-						.write(&(command.as_bytes()))
+						.write(command.as_bytes())
 						.map_err(|error| eprintln!("Error: {}", error));
 					if result.is_err() {
 						eprintln!("Failed writing on connection {}, aborting.", connection_number);

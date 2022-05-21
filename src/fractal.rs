@@ -10,7 +10,7 @@ pub fn mandelbrot(c: Complex, iterations: u32) -> f64 {
 		z = z * z + c;
 	}
 
-	return 1.0;
+	1.0
 }
 
 pub fn julia(z: Complex, initial_value: Complex, iterations: u32) -> f64 {
@@ -24,5 +24,5 @@ pub fn julia(z: Complex, initial_value: Complex, iterations: u32) -> f64 {
 		z = z * z + c;
 	}
 
-	return 1.0;
+	1.0
 }
