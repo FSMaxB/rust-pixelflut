@@ -9,7 +9,7 @@ rand = {version = "0.8", features = ["small_rng"]}
 serde = {version = "1", features = ["derive"]}
 image = "0.24"
 ctrlc = "3"
-toml = "0.5"
+toml = "0.7"
 anyhow = "1"
 # https://github.com/tokio-rs/tokio-uring/pull/52 hasn't been release yet.
 tokio-uring = {git = "https://github.com/tokio-rs/tokio-uring"}
