@@ -11,7 +11,7 @@ use std::net::SocketAddr;
 use std::thread;
 use tokio::sync::mpsc;
 use tokio::sync::mpsc::error::TryRecvError;
-use tokio_uring::buf::IoBuf;
+use tokio_uring::buf::BoundedBuf;
 use tokio_uring::net::TcpStream;
 
 pub struct IoUringFramePainter {
@@ -214,7 +214,7 @@ async fn run_single_stream(stream: TcpStream, mut receiver: mpsc::Receiver<Vec<u
 		}
 
 		buffer = {
-			let (result, buffer) = stream.write(buffer).await;
+			let (result, buffer) = stream.write(buffer).submit().await;
 			result?;
 			buffer
 		};
