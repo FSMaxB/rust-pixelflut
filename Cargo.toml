@@ -14,4 +14,4 @@ anyhow = "1"
 # https://github.com/tokio-rs/tokio-uring/pull/52 hasn't been release yet.
 tokio-uring = {git = "https://github.com/tokio-rs/tokio-uring"}
 tokio = {version = "1", features = ["rt", "time", "sync", "parking_lot"]}
-parking_lot = "0.12"
+parking_lot = "0.12.2"
