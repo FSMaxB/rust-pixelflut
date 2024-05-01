@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 rand = {version = "0.8", features = ["small_rng"]}
-serde = {version = "1", features = ["derive"]}
+serde = {version = "1.0.200", features = ["derive"]}
 image = "0.24"
 ctrlc = "3"
 toml = "0.8"
